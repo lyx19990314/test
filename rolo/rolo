@@ -1,0 +1,113 @@
+#
+# rolo -- 在电话簿中查找、添加、删除联系人
+#
+
+#
+# 使用变量PHONEBOOK保存电话簿文件的位置 并将其导出
+# 以便其他程序也能够访问到；如果变量已经设置，则不做改动
+#
+
+: ${PHONEBOOK:=$HOME/phonebook}
+export PHONEBOOK
+
+if [ ! -e "$PHONEBOOK" ] ; then 
+	echo "$PHONEBOOK does not exist!"
+	echo -e "Should I create it for you (y/n)? \c"
+	read answer
+
+	if [ "$answer" != y ] ; then
+		exit 1
+	fi
+
+	touch "$PHONEBOOK" || exit 1
+fi
+
+#
+# 若提供了参数，则默认执行lu操作
+# 
+
+if [ "$#" -ne 0 ] ; then 
+	./lu "$@"
+	exit
+fi
+
+#
+# 设置终端信号的处理程序
+#
+
+trap "continue" SIGINT
+
+#
+# 持续循环，直到用户选择exit
+#
+
+while true
+do
+	#
+	# 显示菜单
+	#
+	
+	echo -e '
+	Would you like to:
+		1. Look someone up
+		2. Add someone to the phone book
+		3. Remove someone from the phone book
+		4. Change an entry in the phone book
+		5. List all names and numbers in the phone book
+		6. Exit this program
+
+	Please select one of the above (1-6): \c'
+
+	read choice
+	echo 
+	case "$choice"
+	in 
+		1)	echo -e "Enter name to look up: \c"		
+			read name
+			
+			if [ -z "$name" ] ; then 
+				echo "Look up ignored"
+			else
+				./lu "$name"
+			fi;;
+		2)	./add;;
+		3)	echo -e "Enter name to remove: \c"
+			read name	
+
+			if [ -z "$name" ] ; then 
+				echo "Removal ignored"
+			else
+				./rem "$name"
+			fi;;
+		4)	echo -e "Enter name to change: \c"
+			read name
+
+			if [ -z "$name" ] ; then
+				echo "Change ignored"
+			else
+				./change "$name"
+			fi;;
+		5)	./listall;;
+		6)	exit 0;;
+		*)	echo -e "Bad choice\a";;
+	esac
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

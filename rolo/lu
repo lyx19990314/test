@@ -1,0 +1,21 @@
+#
+# 在电话簿中查找联系人
+#
+
+name=$1
+grep -i "$name" $PHONEBOOK > /tmp/matches$$
+
+if [ ! -s /tmp/matches$$ ] ; then
+	echo "I can't find $name in the phone book"
+else
+	#
+	# 显示每个联系人的信息
+	#
+
+	while read line
+	do
+		./display "$line"
+	done < /tmp/matches$$
+fi
+
+rm /tmp/matches$$

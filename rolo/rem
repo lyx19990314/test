@@ -1,0 +1,42 @@
+#
+# 从电话簿中删除联系人
+#
+
+name=$1
+
+#
+# 获取要删除联系人的列表，将其放入临时文件夹中
+#
+
+grep -i "$name" $PHONEBOOK > /tmp/matches$$
+if [ ! -s /tmp/matches$$ ] ; then
+	echo "I can't find $name in the phone book"
+	ecit 1
+fi
+
+#
+# 显示出匹配的联系人，并确认是否删除
+#
+
+while read line
+do
+	./display "$line"
+	echo -e "Remove this entry (y/n)? \c"
+	read answer < /dev/tty
+
+	if [ "$answer" = y ] ; then
+		break
+	fi
+done < /tmp/matches$$
+
+rm /tmp/matches$$
+
+if [ "$answer" = y ] ; then 
+	grep -i -v "^$line$" $PHONEBOOK > /tmp/phonebook$$
+	mv /tmp/phonebook$$ $PHONEBOOK
+	echo "Selected entry has been removed"
+	if [ ! -s $PHONEBOOK ]
+	then
+		echo "Note: you now have an empty phonebook"
+	fi
+fi

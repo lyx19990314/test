@@ -1,0 +1,58 @@
+#
+# 修改电话簿中的联系人信息
+#
+
+name=$1
+
+#
+# 获取匹配的联系人并将其保存在临时文件中
+#
+
+grep -i "$name" $PHONEBOOK > /tmp/matches$$
+if [ ! -s /tmp/matches$$ ] ; then
+	echo "I can't find $name in the phone book"
+	exit 1
+fi
+
+#
+# 显示出要修改的联系人信息，并确定是否要修改
+#
+
+while read line
+do
+	./display "$line"
+	echo -e "Change this entry (y/n)? \c"
+	read answer < /dev/tty
+
+	if [ "$answer" = y ] ; then
+		break
+	fi
+done < /tmp/matches$$
+
+rm /tmp/matches$$
+
+if [ "$answer" != y ] ; then 
+	exit 
+fi
+
+#
+# 针对已确定修改的内容启动编辑器
+#
+
+echo -e "$line\c" | tr '^' '\012' > /tmp/ed$$
+
+echo "Enter changes with ${EDITOR:=vim}"
+
+trap "" 2
+$EDITOR /tmp/ed$$
+
+#
+# 删除旧信息，插入新信息
+#
+
+grep -i -v "^$line$" $PHONEBOOK > /tmp/phonebook$$
+{ tr '\012' '^' < /tmp/ed$$; echo; } >> /tmp/phonebook$$
+
+sort /tmp/phonebook$$ -o $PHONEBOOK
+rm /tmp/ed$$ /tmp/phonebook$$
+
